@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+pydantic
+pymongo
+python-dotenv
+requests
+beautifulsoup4
+playwright
+spacy
+nltk
+sentence-transformers
+faiss-cpu
+streamlit
