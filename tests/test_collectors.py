@@ -11,7 +11,16 @@ def test_collector_static():
 
     url = "https://climate.nasa.gov/news/"
 
-    id = agent.collect_from_url(url, source="nasa_climate_news")
+    id = agent.collect_static(url, source="nasa_climate_news")
     print("Collected document ID:", id)
 
-test_collector_static()
+def test_collector_dynamic():
+    agent = CollectorAgent("test_collection")
+
+    url = "https://www.nytimes.com/section/climate"
+
+    id = agent.collect_dynamic(url)
+    print("Collected document ID:", id)
+
+
+test_collector_dynamic()
