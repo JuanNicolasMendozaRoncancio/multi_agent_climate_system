@@ -9,7 +9,7 @@ def test_get_collection():
 def test_collector_static():
     agent = CollectorAgent("test_collection")
 
-    url = "https://climate.nasa.gov/news/"
+    url = "https://climate.nasa.gov/news/3330/nasa-study-temperature-anomalies-in-2023/"
 
     id = agent.collect_static(url, source="nasa_climate_news")
     print("Collected document ID:", id)
@@ -22,5 +22,25 @@ def test_collector_dynamic():
     id = agent.collect_dynamic(url)
     print("Collected document ID:", id)
 
+def test_collector_newsapi():
+    agent = CollectorAgent("test_collection")
 
-test_collector_dynamic()
+    inserted_count = agent.collect_newsapi(query="Climate change")
+    print("Number of articles collected:", inserted_count)
+
+def test_collector_rss():
+    agent = CollectorAgent("test_collection")
+
+    feed_url = "http://feeds.bbci.co.uk/news/science_and_environment/rss.xml"
+
+    inserted_count = agent.collect_rss(feed_url)
+    print("Number of RSS items collected:", inserted_count)
+
+def test_collector_twitter():
+    agent = CollectorAgent("test_collection")
+
+    inserted_count = agent.collect_twitter(query="climate change", max_results=5)
+    print("Number of tweets collected:", inserted_count)
+
+
+test_collector_twitter()

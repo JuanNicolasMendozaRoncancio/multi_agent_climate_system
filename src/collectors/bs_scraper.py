@@ -14,7 +14,9 @@ def scrape_static_page(url):
 
     soup = BeautifulSoup(response.text, 'html.parser')
     
+    title = soup.title.string if soup.title else ""
+
     paragraphs = [p.get_text() for p in soup.find_all('p')]
     text = '\n'.join(paragraphs) if paragraphs else ""
 
-    return {"html": response.text, "text": text}
+    return {"title": title, "html": response.text, "text": text}
