@@ -22,10 +22,13 @@ def test_collector_dynamic():
     id = agent.collect_dynamic(url)
     print("Collected document ID:", id)
 
+
+
+
 def test_collector_newsapi():
     agent = CollectorAgent("test_collection")
 
-    inserted_count = agent.collect_newsapi(query="Climate change")
+    inserted_count = agent.collect_newsapi()
     print("Number of articles collected:", inserted_count)
 
 def test_collector_rss():
@@ -43,4 +46,4 @@ def test_collector_twitter():
     print("Number of tweets collected:", inserted_count)
 
 
-test_collector_twitter()
+test_collector_newsapi()

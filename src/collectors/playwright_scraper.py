@@ -1,4 +1,5 @@
 from playwright.sync_api import sync_playwright
+from src.utils.paywall_detector import detect_paywall
 
 def scrape_dynamic_page(url: str, wait_for_selector: str = "body") -> dict:
     
@@ -15,5 +16,9 @@ def scrape_dynamic_page(url: str, wait_for_selector: str = "body") -> dict:
         text = page.inner_text("body")
 
         browser.close()
+
+        
+        if detect_paywall(html):
+            return None
 
     return {"title": title,"html": html, "text": text}

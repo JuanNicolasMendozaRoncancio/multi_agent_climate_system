@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+from src.utils.paywall_detector import detect_paywall
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -8,11 +9,18 @@ HEADERS = {
 }
 
 def scrape_static_page(url):
-    
+
     response = requests.get(url, headers=HEADERS, timeout=10)
     response.raise_for_status()
 
-    soup = BeautifulSoup(response.text, 'html.parser')
+    html = response.text
+
+    scraped = scrape_static_page(url)
+
+    if detect_paywall(scraped["html"]):
+        return None
+    
+    soup = BeautifulSoup(html, 'html.parser')
     
     title = soup.title.string if soup.title else ""
 

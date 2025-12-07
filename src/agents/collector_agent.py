@@ -18,6 +18,9 @@ class CollectorAgent:
 
         scraped = scrape_static_page(url)
 
+        if scraped is None:
+            return None
+        
         document = RawDocument(
             source=source,
             title=scraped.get("title"),
@@ -33,8 +36,10 @@ class CollectorAgent:
         return inserted_id
 
     def collect_dynamic(self, url: str, source: str = "generic", wait_for_selector: str = "body"):
+
         data = scrape_dynamic_page(url, wait_for_selector=wait_for_selector)
 
+        
         document = RawDocument(
             source=source,
             title=data.get("title"),
@@ -51,26 +56,33 @@ class CollectorAgent:
     
 
     
-    def collect_newsapi(self, query= "Climate change", page_size = 20):
+    def collect_newsapi(self):
 
 
-        articles = fetch_top_headlines(query=query, page_size=page_size)
+        articles = fetch_top_headlines()
         inserted = 0
 
-        for article in articles:
+        for url in articles:
+            
+            data = scrape_dynamic_page(url, wait_for_selector="body")
+
+            if data is None:
+                continue
+            
             document = RawDocument(
                 source="newsapi",
-                title=article.get("title", ""),
-                url=article.get("url", ""),
-                content=article.get("content", "") or article.get("description", ""),
-                published_at=article.get("publishedAt", None),
-                raw_metadata=article
+                title=data.get("title"),
+                content=data.get("text", ""),
+                url=url,
+                raw_metadata={
+                    "scraper": "playwright",
+                    "html": data.get("html")
+                }
             )
-
             
-            self.collection.insert_one(document.to_mongo())
+            inserted_id = self.collection.insert_one(document.to_mongo()).inserted_id
             inserted += 1
-
+       
         return inserted
     
     def collect_rss(self, feed_url: str):

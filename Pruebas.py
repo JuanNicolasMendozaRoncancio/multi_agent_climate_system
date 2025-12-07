@@ -1,17 +1,14 @@
-import requests
-from bs4 import BeautifulSoup
+from src.agents.collector_agent import CollectorAgent
+from src.collectors.newsapi_client import fetch_top_headlines
 
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                  "AppleWebKit/537.36 (KHTML, like Gecko) "
-                  "Chrome/120.0.0.0 Safari/537.36",
-}
 
-response = requests.get("https://en.wikipedia.org/wiki/Carl_Friedrich_Gauss", headers=HEADERS, timeout=10)
-response.raise_for_status()
+agent = CollectorAgent("test_collection")
+urls = fetch_top_headlines()
 
-soup = BeautifulSoup(response.text, 'html.parser')
-paragraphs = [p.get_text() for p in soup.find_all('p')]
 
-print(paragraphs)
-print(response.text.encode('utf-8', errors='ignore').decode('utf-8'))
+inserted_count = 0
+for url in urls:
+    id = agent.collect_dynamic(url, source="newsapi")
+    if id is not None:
+        inserted_count += 1
+print(f"Total documents inserted: {inserted_count}")
