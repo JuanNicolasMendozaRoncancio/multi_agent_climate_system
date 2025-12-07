@@ -1,4 +1,5 @@
 import feedparser
+from email.utils import parsedate_to_datetime
 
 def fetch_rss_feed(url):    
     """
@@ -16,7 +17,7 @@ def fetch_rss_feed(url):
         articles.append({
             "title": entry.get("title", ""),
             "link": entry.get("link", ""),
-            "published": entry.get("published", ""),
+            "published": parsedate_to_datetime(entry.get("published", "")) if entry.get("published", "") else None,
             "summary": entry.get("summary", "")
         })
     return articles
