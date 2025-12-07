@@ -17,7 +17,5 @@ def scrape_dynamic_page(url: str, wait_for_selector: str = "body") -> dict:
 
         browser.close()
         
-        # if detect_paywall(html):
-        #     return None
 
     return {"title": title,"html": html, "text": text}

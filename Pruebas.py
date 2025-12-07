@@ -1,46 +1,39 @@
-import random
-import requests
-from bs4 import BeautifulSoup
+import feedparser
+from email.utils import parsedate_to_datetime
+from src.database.mongodb_client import db
 
+from src.collectors.bs_scraper import scrape_static_page
+from src.database.schemas import raw_article_schema
 
-NITTER_INSTANCE = "https://nitter.net"
-queres = ["climate change crisis", "global warming effects", 
-          "climate action now","sustainable living tips"]
-query = random.choice(queres)
+url = "https://www.theguardian.com/environment/rss"
+feed = feedparser.parse(url)
+articles = []
+    
+for entry in feed.entries:
+        articles.append({
+            "title": entry.get("title", ""),
+            "link": entry.get("link", ""),
+            "published": parsedate_to_datetime(entry.get("published", "")) if entry.get("published", "") else None,
+            "summary": entry.get("summary", "")
+        })
 
-url = f"{NITTER_INSTANCE}/search?f=tweets&q={query.replace(' ', '+')}"
+print(f"Number of articles fetched: {len(articles)}")
+print("First article:", articles[0] if articles else "No articles found")
 
-print(f"Fetching tweets from url: {url}")
+scraped = scrape_static_page(articles[0]["link"])
+scraper_used = "bs_scraper"
+html = scraped["html"]
+text = scraped["text"]
 
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                  "AppleWebKit/537.36 (KHTML, like Gecko) "
-                  "Chrome/120.0.0.0 Safari/537.36",
-}
+article = raw_article_schema(
+        url=url,
+        text=text,
+        html=html,
+        title=articles[0]["title"],
+        source="rss_feed",
+        scraper_used=scraper_used,
+        parent_id=None,
+        published_at=articles[0]["published"]
+    )
 
-response = requests.get(url, headers=HEADERS, timeout=10)
-
-print("Status:", response.status_code)
-print("Headers:", response.headers)
-print("Length:", len(response.text))
-print("Text:", response.text[:200])
-
-soup = BeautifulSoup(response.text, "html.parser")
-print("soup:", soup.prettify()[:1000])  
-
-tweets = []
-
-# for item in soup.select(".timeline-item"):
-#     print("item:", item)
-#     content_div = item.select_one(".tweet-content.media-body")
-#     if content_div:
-#         text = content_div.get_text(" ", strip=True)
-#         tweets.append(text)
-
-#     if len(tweets) >= 5:
-#         break
-
-# print("Query:", query)
-# print("Tweets found:", len(tweets))
-# for t in tweets:
-#     print("-", t)
+db.raw.insert_one(article)

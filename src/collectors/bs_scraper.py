@@ -16,7 +16,7 @@ def scrape_static_page(url):
     html = response.text
 
     if detect_paywall(html):
-        return None
+        return {"title": "", "html": html, "text": ""}
     
     soup = BeautifulSoup(html, 'html.parser')
     

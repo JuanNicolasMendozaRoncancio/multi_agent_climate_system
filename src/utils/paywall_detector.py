@@ -1,30 +1,40 @@
 from bs4 import BeautifulSoup
 
 PAYWALL_KEYWORDS = [
-    "paywall", "metered", "subscribe", "premium", 
-    "login required", "subscriber", "restricted"
+    "paywall", "metered", "subscribe to read", 
+    "please subscribe", "subscription required"
 ]
 
+# selectores mucho más específicos
 PAYWALL_SELECTORS = [
-    ".paywall", "#paywall", ".subscription", ".premium",
-    "div[class*='meter']", "div[data-test*='paywall']"
+    ".paywall", 
+    "div.paywall",
+    "div[data-component='paywall']",
+    "div[id*='paywall']",
+    "div[class*='paywall']",
+    "div[class*='subscription-required']"
 ]
+
 
 def detect_paywall(html: str) -> bool:
     """
-    Detecta si una página tiene un paywall.
-    Retorna True si se detecta paywall.
+    Detector RELAJADO de paywall.
+    Solo activa si se detecta fuerte evidencia.
     """
     soup = BeautifulSoup(html, "html.parser")
-    
-    # 1. palabras clave
-    text = soup.get_text().lower()
-    if any(kw in text for kw in PAYWALL_KEYWORDS):
+    text = soup.get_text(separator=" ", strip=True).lower()
+    text_length = len(text)
+
+    if text_length < 300:
+        low_text = True
+    else:
+        low_text = False
+
+    keyword_hit = any(kw in text for kw in PAYWALL_KEYWORDS)
+
+    selector_hit = any(soup.select(selector) for selector in PAYWALL_SELECTORS)
+
+    if (keyword_hit and low_text) or selector_hit:
         return True
-    
-    # 2. selectores típicos
-    for selector in PAYWALL_SELECTORS:
-        if soup.select_one(selector):
-            return True
-    
+
     return False
